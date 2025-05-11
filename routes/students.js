@@ -61,7 +61,7 @@ router.put('/:id', ash(async(req, res) => {
         { where: {id: req.params.id} }
   );
   // Find student by Primary Key
-  let student = await Student.findByPk(req.params.id);
+  let student = await Student.findByPk(req.params.id, {include: [Campus]});
   res.status(201).json(student);  // Status code 201 Created - successful creation of a resource
 }));
 
