@@ -12,6 +12,8 @@ const seedDB = require('./database/utils/seedDB');  // Import function to seed d
 // Import database instance for database connection (including database name, username, and password)
 const db = require('./database');
 
+
+
 /* MODEL SYNCHRONIZATION & DATABASE SEEDING */
 // Set up sync and seed process
 const syncDatabase = async () => {
@@ -35,6 +37,9 @@ const syncDatabase = async () => {
 const express = require("express");
 // Create an Express application called "app"
 const app = express();
+
+const cors = require('cors');
+app.use(cors());
 
 /* SET UP ROUTES */
 // Import sub-routes and associated router functions for students and campuses
@@ -66,20 +71,25 @@ const configureApp = async () => {
     res.status(err.status || 500).send(err.message || "Internal server error.");  // Status code 500 Internal Server Error - server error
   });
 };
+const PORT = 5001;
 
-/* SET UP BOOT FOR SERVER APPLICATION */
-// Construct the boot process by incorporating all needed processes
 const bootApp = async () => {
-  await createDB();  // Create database (if not exists)
-  await syncDatabase();  // Seed the database
-  await configureApp();  // Start and configure Express application
+  await createDB();         // Create DB if needed
+  await syncDatabase();     // Sync and seed DB
+  await configureApp();     // Setup middleware and routes
+
+  const server = app.listen(PORT, () => {
+    console.log(`✅ Server started on http://localhost:${PORT}`);
+  });
+
+  // 🧠 Catch address-in-use error
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`❌ Port ${PORT} is already in use`);
+      process.exit(1); // Cleanly exit to avoid zombie process
+    }
+  });
 };
 
-/* START THE SERVER BOOT */
-// Finally, run the boot process to start server application
 bootApp();
 
-/* ACTIVATE THE SERVER PORT */
-// Set up express application to use port 5000 as the access point for the server application.
-const PORT = 5001;  // Server application access point port number
-app.listen(PORT, console.log(`Server started on ${PORT}`));
